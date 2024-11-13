@@ -13,6 +13,7 @@ class Player:
 
         self.y_velo = 0
         self.jumping = False
+        self.landed = True
         self.jump_height = 15
 
     def draw(self):
@@ -24,13 +25,16 @@ class Player:
 
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_RIGHT] and self.rect.right + x_change < WIDTH-BRICK_WIDTH:
+        if keys[pygame.K_RIGHT]: # and self.rect.right + x_change < WIDTH-BRICK_WIDTH:
             x_change = self.x_velo
-        if keys[pygame.K_LEFT] and self.rect.x > BRICK_WIDTH:
+        if keys[pygame.K_LEFT]: # and self.rect.x > BRICK_WIDTH:
             x_change = -1*self.x_velo
-        if keys[pygame.K_SPACE] and not self.jumping:
+        if keys[pygame.K_SPACE] and not self.jumping and self.landed:
             self.jumping = True
+            self.landed = False
             self.y_velo = -15
+        if not keys[pygame.K_SPACE]:
+            self.jumping = False
         
         # add gravity
         self.y_velo += GRAVITY
@@ -40,10 +44,12 @@ class Player:
         y_change += self.y_velo
         
         for surface in surface_list:
+            if surface.rect.colliderect(self.rect.x + x_change, self.rect.y, self.rect.width, self.rect.height):
+                x_change = 0
             if surface.rect.colliderect(self.rect.x, self.rect.y + y_change, self.rect.width, self.rect.height):
                 if self.y_velo >= 0:
                     y_change = surface.rect.top - self.rect.bottom
-                    self.jumping = False
+                    self.landed = True
                     self.y_velo = 0
                 elif self.y_velo < 0:
                     y_change = surface.rect.bottom - self.rect.top
